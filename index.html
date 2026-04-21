@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lista de Presentes da Olivia 🎀</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --pink-light: #fff5f7;
+      --pink-border: #f4c2d0;
+      --pink-mid: #f5a8c0;
+      --pink-main: #c45e82;
+      --pink-dark: #b04e72;
+      --pink-text: #6d3a50;
+      --pink-muted: #a07080;
+      --pink-faint: #fff9fb;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Lato', sans-serif; background: var(--pink-light); min-height: 100vh; color: var(--pink-text); }
+
+    /* LOADING */
+    #app-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 40vh; gap: 16px; color: var(--pink-muted); font-size: 15px; font-weight: 300; }
+    .spinner { width: 36px; height: 36px; border: 3px solid var(--pink-border); border-top-color: var(--pink-main); border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* HERO */
+    .hero { background: linear-gradient(160deg, #fde8ef 0%, #fdf0f5 55%, var(--pink-light) 100%); padding: 56px 24px 36px; text-align: center; border-bottom: 1px solid var(--pink-border); position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; top: -60px; left: -60px; width: 220px; height: 220px; background: radial-gradient(circle, #f9c6d540 0%, transparent 70%); pointer-events: none; }
+    .hero::after  { content: ''; position: absolute; bottom: -40px; right: -40px; width: 180px; height: 180px; background: radial-gradient(circle, #f9c6d540 0%, transparent 70%); pointer-events: none; }
+    .hero-bow { display: flex; justify-content: center; margin-bottom: 18px; animation: floatBow 3.5s ease-in-out infinite; }
+    @keyframes floatBow { 0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);} }
+    .hero-title { font-family: 'Playfair Display', serif; font-size: clamp(60px,14vw,100px); font-weight: 700; color: var(--pink-main); letter-spacing: 6px; line-height: 1; margin-bottom: 16px; animation: fadeUp .8s ease both; }
+    .hero-subtitle { font-size: clamp(13px,2.2vw,16px); color: var(--pink-muted); font-weight: 300; max-width: 580px; margin: 0 auto; line-height: 1.8; animation: fadeUp .8s .15s ease both; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);} }
+    .dots-row { display: flex; justify-content: center; gap: 10px; margin-top: 20px; animation: fadeUp .8s .25s ease both; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--pink-border); }
+    .dot:nth-child(2) { background: var(--pink-main); transform: scale(1.2); }
+
+    /* COUNTDOWN */
+    .countdown-wrap { background: #fff; border: 1px solid var(--pink-border); border-radius: 24px; max-width: 540px; margin: 28px auto 0; padding: 22px 28px; animation: fadeUp .8s .3s ease both; }
+    .countdown-label { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--pink-muted); margin-bottom: 14px; font-weight: 700; }
+    .countdown-blocks { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+    .cd-block { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 64px; }
+    .cd-num { font-family: 'Playfair Display', serif; font-size: clamp(28px,6vw,42px); font-weight: 700; color: var(--pink-main); line-height: 1; }
+    .cd-unit { font-size: 11px; color: var(--pink-muted); text-transform: uppercase; letter-spacing: 1px; }
+    .cd-sep { font-family: 'Playfair Display', serif; font-size: 32px; color: var(--pink-border); line-height: 1; align-self: flex-start; margin-top: 6px; }
+    .countdown-arrived { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--pink-main); }
+
+    /* SECTION JUMP NAV */
+    .section-nav-wrap { max-width: 960px; margin: 32px auto 0; padding: 0 20px; animation: fadeUp .8s .35s ease both; }
+    .section-nav-label { font-size: 12px; font-weight: 700; color: var(--pink-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+    .section-nav-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pill-btn {
+      background: #fff; border: 1.5px solid var(--pink-border); border-radius: 30px;
+      padding: 8px 16px; font-size: 13px; font-family: 'Lato', sans-serif;
+      color: var(--pink-muted); cursor: pointer; transition: all .2s; font-weight: 400;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .pill-btn:hover { border-color: var(--pink-main); color: var(--pink-main); background: var(--pink-faint); }
+    .pill-btn .pill-count { font-size: 11px; background: var(--pink-border); color: var(--pink-dark); border-radius: 20px; padding: 1px 7px; font-weight: 700; }
+
+    /* LIST SECTION */
+    .list-section { padding: 36px 20px 80px; max-width: 960px; margin: 0 auto; }
+
+    /* CATEGORY BLOCK */
+    .category-block { margin-bottom: 56px; scroll-margin-top: 24px; }
+    .category-header { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; padding-bottom: 14px; border-bottom: 1.5px solid var(--pink-border); }
+    .category-icon { font-size: 22px; line-height: 1; }
+    .category-title { font-family: 'Playfair Display', serif; font-size: clamp(18px,3.5vw,24px); font-weight: 700; color: var(--pink-dark); line-height: 1.2; }
+    .category-subtitle-text { font-size: 12px; color: var(--pink-muted); font-weight: 300; font-style: italic; margin-top: 2px; }
+    .category-count { font-size: 12px; color: var(--pink-muted); background: #fde8ef; border-radius: 20px; padding: 3px 10px; font-weight: 700; margin-left: auto; white-space: nowrap; flex-shrink: 0; }
+
+    .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 20px; }
+
+    /* CARD */
+    .gift-card { background: #fff; border: 1px solid var(--pink-border); border-radius: 20px; display: flex; flex-direction: column; transition: box-shadow .25s, transform .25s; position: relative; overflow: hidden; animation: fadeUp .5s ease both; }
+    .gift-card:hover:not(.taken) { box-shadow: 0 8px 28px #f0aac028; transform: translateY(-3px); }
+    .gift-card.taken { opacity: 0.45; filter: grayscale(0.3); pointer-events: none; }
+    .gift-card.taken.unlimited { opacity: 1; filter: none; pointer-events: auto; }
+
+    .card-photo { width: 100%; height: 175px; object-fit: cover; display: block; }
+    .card-photo-placeholder { width: 100%; height: 175px; background: linear-gradient(135deg,#fde8ef,#fdf0f5); display: flex; align-items: center; justify-content: center; }
+
+    .card-body { padding: 15px 15px 13px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+    .card-corner-deco { position: absolute; top: 10px; right: 12px; opacity: 0.18; pointer-events: none; z-index: 1; }
+    .card-title { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: var(--pink-dark); line-height: 1.3; padding-right: 32px; }
+    .card-subtitle { font-size: 12px; color: var(--pink-muted); line-height: 1.6; font-weight: 300; }
+    .card-link { font-size: 12px; color: var(--pink-main); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; width: fit-content; }
+    .card-link:hover { text-decoration: underline; }
+    .card-unlimited-badge { display: inline-flex; align-items: center; gap: 5px; background: #fde8ef; color: var(--pink-dark); border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 700; width: fit-content; }
+    .card-gifted-count { font-size: 12px; color: var(--pink-muted); font-style: italic; }
+
+    .btn-gift { margin-top: auto; background: var(--pink-mid); color: #fff; border: none; border-radius: 40px; padding: 10px 16px; font-size: 12px; font-family: 'Lato', sans-serif; font-weight: 700; cursor: pointer; transition: background .2s, transform .15s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-gift:hover { background: var(--pink-main); transform: scale(1.02); }
+    .gift-card.taken:not(.unlimited) .btn-gift { display: none; }
+    .taken-badge { display: none; background: #fde8ef; color: #8b3a58; border-radius: 40px; padding: 10px 16px; font-size: 12px; font-weight: 700; text-align: center; margin-top: auto; }
+    .gift-card.taken:not(.unlimited) .taken-badge { display: block; }
+    .taken-name { font-size: 11px; color: #b07080; text-align: center; margin-top: 2px; font-style: italic; }
+
+    /* GIFTED SECTION special style */
+    .category-block.gifted-section .category-header { border-bottom-color: #e8d0d8; }
+    .category-block.gifted-section .category-title { color: #b09098; }
+    .category-block.gifted-section .gift-card { opacity: .5; filter: grayscale(.4); pointer-events: none; }
+
+    .cat-empty { color: var(--pink-muted); font-size: 13px; font-style: italic; padding: 6px 0; }
+
+    /* MODAL */
+    .modal-bg { display: none; position: fixed; inset: 0; background: rgba(160,60,90,.16); backdrop-filter: blur(3px); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+    .modal-bg.open { display: flex; }
+    .modal-box { background: #fff; border: 1.5px solid var(--pink-border); border-radius: 28px; padding: 40px 34px 32px; max-width: 380px; width: 100%; text-align: center; box-shadow: 0 12px 48px #c45e8222; animation: popIn .25s ease; }
+    @keyframes popIn { from{opacity:0;transform:scale(.93);}to{opacity:1;transform:scale(1);} }
+    .modal-bow { margin-bottom: 10px; }
+    .modal-title { font-family: 'Playfair Display', serif; font-size: 24px; color: var(--pink-dark); margin-bottom: 6px; }
+    .modal-item-name { font-size: 14px; color: var(--pink-muted); margin-bottom: 24px; font-style: italic; }
+    .modal-input { width: 100%; border: 1px solid var(--pink-border); border-radius: 40px; padding: 12px 20px; font-size: 14px; font-family: 'Lato', sans-serif; color: var(--pink-text); outline: none; margin-bottom: 14px; background: var(--pink-faint); transition: border-color .2s; }
+    .modal-input:focus { border-color: var(--pink-main); }
+    .btn-confirm { width: 100%; background: var(--pink-mid); color: #fff; border: none; border-radius: 40px; padding: 13px; font-size: 15px; font-weight: 700; font-family: 'Lato', sans-serif; cursor: pointer; transition: background .2s; margin-bottom: 12px; }
+    .btn-confirm:hover { background: var(--pink-main); }
+    .btn-confirm:disabled { background: var(--pink-border); cursor: not-allowed; }
+    .btn-cancel { background: none; border: none; color: #c0a0a8; font-size: 13px; cursor: pointer; font-family: 'Lato', sans-serif; transition: color .2s; }
+    .btn-cancel:hover { color: var(--pink-main); }
+    .sending-msg { font-size: 12px; color: var(--pink-muted); min-height: 18px; margin-bottom: 6px; }
+
+    /* ADMIN */
+    .btn-admin-float { position: fixed; bottom: 20px; right: 20px; z-index: 200; background: var(--pink-mid); color: #fff; border: none; border-radius: 40px; padding: 10px 20px; font-size: 12px; font-weight: 700; font-family: 'Lato', sans-serif; cursor: pointer; box-shadow: 0 4px 16px #c45e8228; transition: background .2s; }
+    .btn-admin-float:hover { background: var(--pink-main); }
+    .admin-panel { display: none; position: fixed; inset: 0; z-index: 300; background: rgba(160,60,90,.12); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px; }
+    .admin-panel.open { display: flex; }
+    .admin-box { background: #fff; border: 1.5px solid var(--pink-border); border-radius: 28px; padding: 36px; max-width: 560px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 12px 48px #c45e8218; animation: popIn .25s ease; }
+    .admin-title { font-family: 'Playfair Display', serif; font-size: 24px; color: var(--pink-dark); margin-bottom: 4px; }
+    .admin-sub   { font-size: 13px; color: var(--pink-muted); margin-bottom: 24px; }
+    .admin-login { display: flex; flex-direction: column; gap: 12px; }
+    .admin-field { width: 100%; border: 1px solid var(--pink-border); border-radius: 14px; padding: 11px 16px; font-size: 13px; font-family: 'Lato', sans-serif; color: var(--pink-text); background: var(--pink-faint); outline: none; transition: border-color .2s; }
+    .admin-field:focus { border-color: var(--pink-main); }
+    .admin-select { width: 100%; border: 1px solid var(--pink-border); border-radius: 14px; padding: 11px 16px; font-size: 13px; font-family: 'Lato', sans-serif; color: var(--pink-text); background: var(--pink-faint); outline: none; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c45e82' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+    .section-divider { border: none; border-top: 1px solid var(--pink-border); margin: 22px 0; }
+    .admin-section-title { font-size: 14px; font-weight: 700; color: var(--pink-dark); margin-bottom: 12px; }
+    .admin-cat-group { margin-bottom: 18px; }
+    .admin-cat-label { font-size: 11px; font-weight: 700; color: var(--pink-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .admin-item-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border: 1px solid var(--pink-border); border-radius: 14px; margin-bottom: 6px; gap: 10px; }
+    .admin-item-info { flex: 1; min-width: 0; }
+    .admin-item-info strong { font-size: 13px; color: var(--pink-dark); display: block; }
+    .admin-item-info span  { font-size: 11px; color: var(--pink-muted); display: block; }
+    .btn-delete { background: #fde8ef; color: var(--pink-main); border: 1px solid var(--pink-border); border-radius: 20px; padding: 5px 14px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; font-family: 'Lato', sans-serif; transition: background .2s, color .2s; }
+    .btn-delete:hover { background: var(--pink-mid); color: #fff; border-color: var(--pink-mid); }
+    .add-form { display: flex; flex-direction: column; gap: 10px; }
+    .photo-url-preview { width: 100%; height: 130px; object-fit: cover; border-radius: 12px; display: none; border: 1px solid var(--pink-border); }
+    .photo-url-hint { font-size: 11px; color: var(--pink-muted); padding: 0 4px; }
+    .checkbox-row { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
+    .checkbox-row input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--pink-main); cursor: pointer; flex-shrink: 0; }
+    .checkbox-row label { font-size: 13px; color: var(--pink-text); cursor: pointer; }
+    .btn-add-item { background: var(--pink-mid); color: #fff; border: none; border-radius: 40px; padding: 12px; font-size: 13px; font-weight: 700; font-family: 'Lato', sans-serif; cursor: pointer; transition: background .2s; }
+    .btn-add-item:hover { background: var(--pink-main); }
+    .btn-add-item:disabled { background: var(--pink-border); cursor: not-allowed; }
+    .btn-admin-close { background: none; border: none; color: #c0a0a8; font-size: 13px; cursor: pointer; font-family: 'Lato', sans-serif; margin-top: 16px; display: block; width: 100%; text-align: center; transition: color .2s; }
+    .btn-admin-close:hover { color: var(--pink-main); }
+    .login-error { color: var(--pink-main); font-size: 12px; text-align: center; display: none; }
+    .site-footer { text-align: center; padding: 0 20px 40px; color: #d0b0bc; font-size: 12px; font-weight: 300; }
+
+    @media (max-width: 520px) {
+      .items-grid { grid-template-columns: 1fr; }
+      .hero { padding: 40px 18px 28px; }
+      .admin-box, .modal-box { padding: 28px 20px 22px; }
+      .countdown-blocks { gap: 8px; }
+      .section-nav-pills { gap: 6px; }
+      .pill-btn { font-size: 12px; padding: 7px 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-bow">
+      <svg width="130" height="52" viewBox="0 0 130 52" fill="none">
+        <ellipse cx="38" cy="26" rx="36" ry="18" fill="#f9c6d5" opacity=".75"/>
+        <ellipse cx="92" cy="26" rx="36" ry="18" fill="#f9c6d5" opacity=".75"/>
+        <ellipse cx="38" cy="26" rx="21" ry="11" fill="#f0a0bf" opacity=".65"/>
+        <ellipse cx="92" cy="26" rx="21" ry="11" fill="#f0a0bf" opacity=".65"/>
+        <ellipse cx="65" cy="26" rx="11" ry="11" fill="#e87aaa"/>
+        <ellipse cx="65" cy="26" rx="6.5" ry="6.5" fill="#d45a90"/>
+        <line x1="38" y1="26" x2="6"   y2="48" stroke="#f0a0bf" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="92" y1="26" x2="124" y2="48" stroke="#f0a0bf" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <h1 class="hero-title">Olivia</h1>
+    <p class="hero-subtitle">Enxoval de chegada da Olivia! ✨<br>Essa lista é usada pelos pais para acompanharem o que já temos e o que ainda falta, e pelos amigos e familiares que quiserem presentear com coisinhas úteis!</p>
+    <div class="dots-row">
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+    <div class="countdown-wrap">
+      <div class="countdown-label">Chegada da Olivia em</div>
+      <div class="countdown-blocks" id="countdown-blocks">
+        <div class="cd-block"><span class="cd-num" id="cd-days">--</span><span class="cd-unit">dias</span></div>
+        <div class="cd-sep">·</div>
+        <div class="cd-block"><span class="cd-num" id="cd-hours">--</span><span class="cd-unit">horas</span></div>
+        <div class="cd-sep">·</div>
+        <div class="cd-block"><span class="cd-num" id="cd-mins">--</span><span class="cd-unit">min</span></div>
+        <div class="cd-sep">·</div>
+        <div class="cd-block"><span class="cd-num" id="cd-secs">--</span><span class="cd-unit">seg</span></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- SECTION NAV -->
+  <div class="section-nav-wrap">
+    <div class="section-nav-label">Ir direto para uma seção</div>
+    <div class="section-nav-pills" id="section-nav-pills"></div>
+  </div>
+
+  <!-- LISTA -->
+  <main class="list-section">
+    <div id="app-loading">
+      <div class="spinner"></div>
+      <span>Carregando listinha...</span>
+    </div>
+    <div id="categories-container" style="display:none;"></div>
+  </main>
+
+  <footer class="site-footer">feito com amor para a Olivia 🎀</footer>
+
+  <!-- MODAL PRESENTE -->
+  <div class="modal-bg" id="gift-modal" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <div class="modal-bow">
+        <svg width="64" height="26" viewBox="0 0 80 32" fill="none">
+          <ellipse cx="24" cy="16" rx="22" ry="11" fill="#f9c6d5" opacity=".7"/>
+          <ellipse cx="56" cy="16" rx="22" ry="11" fill="#f9c6d5" opacity=".7"/>
+          <ellipse cx="40" cy="16" rx="7"  ry="7"  fill="#e87aaa"/>
+          <ellipse cx="40" cy="16" rx="4"  ry="4"  fill="#d45a90"/>
+          <line x1="24" y1="16" x2="4"  y2="30" stroke="#f0a0bf" stroke-width="2" stroke-linecap="round"/>
+          <line x1="56" y1="16" x2="76" y2="30" stroke="#f0a0bf" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="modal-title">Que fofo!</div>
+      <div class="modal-item-name" id="modal-item-name"></div>
+      <input class="modal-input" id="modal-name-input" placeholder="Seu nome..." maxlength="60" autocomplete="off" />
+      <button class="btn-confirm" id="btn-confirm-gift">Confirmar presente</button>
+      <div class="sending-msg" id="sending-msg"></div>
+      <button class="btn-cancel" id="btn-cancel-gift">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- PAINEL ADMIN -->
+  <div class="admin-panel" id="admin-panel" role="dialog" aria-modal="true">
+    <div class="admin-box">
+      <div class="admin-title">Área administrativa</div>
+      <div class="admin-sub" id="admin-sub-text">Faça login para gerenciar a lista</div>
+      <div id="admin-login-section" class="admin-login">
+        <input id="admin-user-input" class="admin-field" placeholder="Usuário" autocomplete="off" />
+        <input id="admin-pass-input" class="admin-field" type="password" placeholder="Senha" />
+        <button class="btn-confirm" id="btn-admin-login">Entrar</button>
+        <div class="login-error" id="admin-login-error">Usuário ou senha incorretos.</div>
+      </div>
+      <div id="admin-content" style="display:none;">
+        <div class="admin-section-title" style="margin-top:4px;">Itens na lista</div>
+        <div id="admin-items-list"></div>
+        <hr class="section-divider" />
+        <div class="admin-section-title">Adicionar novo item</div>
+        <div class="add-form">
+          <input    id="new-title"    class="admin-field"  placeholder="Título (ex: Fraldas RN)" maxlength="80" />
+          <input    id="new-subtitle" class="admin-field"  placeholder="Descrição curta" maxlength="160" />
+          <input    id="new-link"     class="admin-field"  placeholder="Link de referência (opcional)" maxlength="400" />
+          <input    id="new-photo"    class="admin-field"  placeholder="URL da foto (opcional)" maxlength="600" />
+          <div class="photo-url-hint">Clique com botão direito na imagem → "Copiar endereço da imagem"</div>
+          <img id="photo-url-preview" class="photo-url-preview" alt="preview" />
+          <select id="new-category" class="admin-select">
+            <option value="basicos">🧴 Básicos essenciais</option>
+            <option value="higiene">🛁 Higiene</option>
+            <option value="quartinho">🛏️ Itens grandes</option>
+            <option value="acessorios">🎀 Acessórios</option>
+            <option value="pos-parto">💛 Pós-parto da mamãe</option>
+          </select>
+          <div class="checkbox-row">
+            <input type="checkbox" id="new-unlimited" />
+            <label for="new-unlimited">Item sem limite de presentes</label>
+          </div>
+          <button class="btn-add-item" id="btn-add-item">+ Adicionar item</button>
+        </div>
+      </div>
+      <button class="btn-admin-close" id="btn-close-admin">Fechar</button>
+    </div>
+  </div>
+
+  <button class="btn-admin-float" id="btn-open-admin">⚙ Admin</button>
+
+  <script type="module">
+    import { initializeApp }  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, collection, doc,
+             onSnapshot, addDoc, updateDoc,
+             deleteDoc, query, orderBy, increment }
+                              from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey:            'AIzaSyBgq0aMvhgnLpPvV9dIHdal1XjjZJq8peE',
+      authDomain:        'olivia-presentes.firebaseapp.com',
+      projectId:         'olivia-presentes',
+      storageBucket:     'olivia-presentes.firebasestorage.app',
+      messagingSenderId: '235294497805',
+      appId:             '1:235294497805:web:d8e94782f7415b0485c944',
+    };
+
+    const EMAILJS_PUBLIC_KEY = '02P-qlqZ07dZcAL22';
+    const EMAILJS_SERVICE    = 'service_c4ntfk5';
+    const EMAILJS_TEMPLATE   = 'template_b640wlm';
+    const TO_EMAIL           = 'pazesilvajulia@gmail.com';
+    const ADMIN_SECRET       = 'olivia2025';
+    const VALID_USERS        = { juliapaz: '123456', miguelzschornack: '123456' };
+    const ARRIVAL_DATE       = new Date('2026-08-01T00:00:00');
+
+    // Categorias principais (itens disponíveis)
+    const CATEGORIES = [
+      { id: 'basicos',    label: 'Básicos essenciais',     sub: 'itens pequenos e fáceis de encontrar — eram pra ser baratinhos, mas não são tão baratinhos hoje em dia kkk', icon: '🧴' },
+      { id: 'higiene',    label: 'Higiene',                sub: '', icon: '🛁' },
+      { id: 'quartinho',  label: 'Itens grandes',          sub: '', icon: '🛏️' },
+      { id: 'acessorios', label: 'Acessórios',             sub: '', icon: '🎀' },
+      { id: 'pos-parto',  label: 'Pós-parto da mamãe!',   sub: '', icon: '💛' },
+    ];
+
+    emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+    const app      = initializeApp(firebaseConfig);
+    const db       = getFirestore(app);
+    const itemsCol = collection(db, 'items');
+
+    let items       = [];
+    let selectedId  = null;
+    let adminLogged = false;
+
+    // ── COUNTDOWN ────────────────────────────────────────────
+    function updateCountdown() {
+      const diff = ARRIVAL_DATE - new Date();
+      if (diff <= 0) {
+        document.getElementById('countdown-blocks').innerHTML =
+          '<div class="countdown-arrived">A Olivia chegou! 🎀</div>';
+        return;
+      }
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000)  / 60000);
+      const s = Math.floor((diff % 60000)    / 1000);
+      document.getElementById('cd-days').textContent  = String(d).padStart(2,'0');
+      document.getElementById('cd-hours').textContent = String(h).padStart(2,'0');
+      document.getElementById('cd-mins').textContent  = String(m).padStart(2,'0');
+      document.getElementById('cd-secs').textContent  = String(s).padStart(2,'0');
+    }
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    // ── HELPERS ──────────────────────────────────────────────
+    const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+    function bowSVG(size) {
+      const h = Math.round(size*.4);
+      return `<svg width="${size}" height="${h}" viewBox="0 0 80 32" fill="none">
+        <ellipse cx="24" cy="16" rx="22" ry="11" fill="#f9c6d5" opacity=".7"/>
+        <ellipse cx="56" cy="16" rx="22" ry="11" fill="#f9c6d5" opacity=".7"/>
+        <ellipse cx="40" cy="16" rx="7" ry="7" fill="#e87aaa"/>
+        <ellipse cx="40" cy="16" rx="4" ry="4" fill="#d45a90"/>
+        <line x1="24" y1="16" x2="4" y2="30" stroke="#f0a0bf" stroke-width="2" stroke-linecap="round"/>
+        <line x1="56" y1="16" x2="76" y2="30" stroke="#f0a0bf" stroke-width="2" stroke-linecap="round"/>
+      </svg>`;
+    }
+
+    const placeholderPhoto = `<div class="card-photo-placeholder"><svg width="44" height="44" viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="12" fill="#f4c2d0"/><path d="M14 34l8-10 6 7 4-5 6 8H14z" fill="#c45e82" opacity=".5"/><circle cx="30" cy="18" r="4" fill="#c45e82" opacity=".5"/></svg></div>`;
+    const hiddenPlaceholder = `<div class="card-photo-placeholder" style="display:none;"><svg width="44" height="44" viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="12" fill="#f4c2d0"/><path d="M14 34l8-10 6 7 4-5 6 8H14z" fill="#c45e82" opacity=".5"/><circle cx="30" cy="18" r="4" fill="#c45e82" opacity=".5"/></svg></div>`;
+
+    function cardHTML(item, delay) {
+      const unlimited   = !!item.unlimited;
+      const giftedCount = item.giftedCount || 0;
+      const isTaken     = !unlimited && !!item.takenBy;
+
+      const photoHtml = item.photoUrl
+        ? `<img class="card-photo" src="${esc(item.photoUrl)}" alt="${esc(item.title)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />${hiddenPlaceholder}`
+        : placeholderPhoto;
+
+      return `<div class="gift-card${isTaken?' taken':''}${unlimited?' unlimited':''}" style="animation-delay:${delay}s">
+        <div class="card-corner-deco">${bowSVG(44)}</div>
+        ${photoHtml}
+        <div class="card-body">
+          <div class="card-title">${esc(item.title)}</div>
+          ${unlimited ? `<div class="card-unlimited-badge">✨ Sem limite de presentes</div>` : ''}
+          <div class="card-subtitle">${esc(item.subtitle)}</div>
+          ${item.link ? `<a class="card-link" href="${esc(item.link)}" target="_blank" rel="noopener">🔗 Ver referência</a>` : ''}
+          ${unlimited && giftedCount > 0 ? `<div class="card-gifted-count">Unidades presenteadas: <strong>${giftedCount}</strong></div>` : ''}
+          <button class="btn-gift" data-id="${item.id}">🎀 Vou presentear!</button>
+          <div class="taken-badge">Já foi presenteado! 🎀</div>
+          ${!unlimited && item.takenBy ? `<div class="taken-name">por ${esc(item.takenBy)}</div>` : ''}
+        </div>
+      </div>`;
+    }
+
+    // ── RENDER ───────────────────────────────────────────────
+    function render() {
+      document.getElementById('app-loading').style.display = 'none';
+      const container = document.getElementById('categories-container');
+      container.style.display = 'block';
+
+      // Split: gifted (taken, non-unlimited) vs available
+      const giftedItems    = items.filter(it => !it.unlimited && !!it.takenBy);
+      const availableItems = items.filter(it => it.unlimited  || !it.takenBy);
+
+      let html = '';
+      let delay = 0;
+
+      // Main categories (available items only)
+      CATEGORIES.forEach(cat => {
+        const catItems = availableItems.filter(it => (it.category || 'basicos') === cat.id);
+        const total    = items.filter(it => (it.category || 'basicos') === cat.id);
+        const avail    = catItems.length;
+
+        html += `<div class="category-block" id="cat-${cat.id}">
+          <div class="category-header">
+            <div>
+              <div style="display:flex;align-items:center;gap:12px;">
+                <span class="category-icon">${cat.icon}</span>
+                <span class="category-title">${cat.label}</span>
+              </div>
+              ${cat.sub ? `<div class="category-subtitle-text">${cat.sub}</div>` : ''}
+            </div>
+            <span class="category-count">${avail} disponível${avail!==1?'is':''}</span>
+          </div>
+          <div class="items-grid">
+            ${catItems.length === 0
+              ? `<p class="cat-empty">Nenhum item disponível nesta categoria.</p>`
+              : catItems.map(it => cardHTML(it, (delay++)*0.06)).join('')
+            }
+          </div>
+        </div>`;
+      });
+
+      // Gifted section
+      if (giftedItems.length > 0) {
+        html += `<div class="category-block gifted-section" id="cat-gifted">
+          <div class="category-header">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <span class="category-icon">😌</span>
+              <span class="category-title">Já foi 😌</span>
+            </div>
+            <span class="category-count">${giftedItems.length} item${giftedItems.length!==1?'ns':''}</span>
+          </div>
+          <div class="items-grid">
+            ${giftedItems.map(it => cardHTML(it, (delay++)*0.04)).join('')}
+          </div>
+        </div>`;
+      }
+
+      container.innerHTML = html;
+
+      container.querySelectorAll('.btn-gift').forEach(btn =>
+        btn.addEventListener('click', () => openGiftModal(btn.dataset.id))
+      );
+
+      renderNavPills(giftedItems.length);
+    }
+
+    // ── NAV PILLS ────────────────────────────────────────────
+    function renderNavPills(giftedCount) {
+      const pillsEl = document.getElementById('section-nav-pills');
+      const allCats = [...CATEGORIES];
+      if (giftedCount > 0) allCats.push({ id: 'gifted', label: 'Já foi 😌', icon: '😌' });
+
+      pillsEl.innerHTML = allCats.map(cat => {
+        const catItems = cat.id === 'gifted'
+          ? items.filter(it => !it.unlimited && !!it.takenBy)
+          : items.filter(it => (it.category || 'basicos') === cat.id && (it.unlimited || !it.takenBy));
+        const count = catItems.length;
+        return `<button class="pill-btn" data-target="cat-${cat.id}">
+          <span>${cat.icon}</span>
+          <span>${cat.label}</span>
+          <span class="pill-count">${count}</span>
+        </button>`;
+      }).join('');
+
+      pillsEl.querySelectorAll('.pill-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const el = document.getElementById(btn.dataset.target);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+    }
+
+    // ── REALTIME ─────────────────────────────────────────────
+    onSnapshot(query(itemsCol, orderBy('order','asc')), snap => {
+      items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      render();
+      if (adminLogged) renderAdminContent();
+    });
+
+    // ── GIFT MODAL ───────────────────────────────────────────
+    function openGiftModal(itemId) {
+      selectedId = itemId;
+      const item = items.find(i => i.id === itemId);
+      document.getElementById('modal-item-name').textContent = item ? item.title : '';
+      document.getElementById('modal-name-input').value = '';
+      document.getElementById('sending-msg').textContent = '';
+      const btn = document.getElementById('btn-confirm-gift');
+      btn.disabled = false; btn.textContent = 'Confirmar presente';
+      document.getElementById('gift-modal').classList.add('open');
+      setTimeout(() => document.getElementById('modal-name-input').focus(), 80);
+    }
+
+    document.getElementById('btn-cancel-gift').addEventListener('click', () => {
+      document.getElementById('gift-modal').classList.remove('open');
+      selectedId = null;
+    });
+    document.getElementById('modal-name-input').addEventListener('keydown', e => {
+      if (e.key==='Enter') document.getElementById('btn-confirm-gift').click();
+    });
+
+    document.getElementById('btn-confirm-gift').addEventListener('click', async () => {
+      const name = document.getElementById('modal-name-input').value.trim();
+      if (!name) { document.getElementById('modal-name-input').focus(); return; }
+      if (!selectedId) return;
+
+      const item = items.find(i => i.id === selectedId);
+      const btn  = document.getElementById('btn-confirm-gift');
+      const msg  = document.getElementById('sending-msg');
+      btn.disabled = true; btn.textContent = 'Enviando...';
+      msg.textContent = 'Confirmando seu presente...';
+
+      try {
+        if (item && item.unlimited) {
+          await updateDoc(doc(db,'items',selectedId), { giftedCount: increment(1) });
+        } else {
+          await updateDoc(doc(db,'items',selectedId), { takenBy: name });
+        }
+        await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
+          to_email:      TO_EMAIL,
+          gifter_name:   name,
+          item_title:    item ? item.title    : selectedId,
+          item_subtitle: item ? item.subtitle : '',
+          item_link:     item && item.link ? item.link : 'Sem link',
+        });
+        document.getElementById('gift-modal').classList.remove('open');
+        selectedId = null;
+      } catch(err) {
+        console.error(err);
+        msg.textContent = 'Erro ao confirmar. Tente novamente.';
+        btn.disabled = false; btn.textContent = 'Confirmar presente';
+      }
+    });
+
+    // ── ADMIN ────────────────────────────────────────────────
+    document.getElementById('btn-open-admin').addEventListener('click', () => {
+      document.getElementById('admin-panel').classList.add('open');
+      if (adminLogged) renderAdminContent();
+    });
+    document.getElementById('btn-close-admin').addEventListener('click', () => {
+      document.getElementById('admin-panel').classList.remove('open');
+    });
+    document.getElementById('admin-user-input').addEventListener('keydown', e => {
+      if (e.key==='Enter') document.getElementById('admin-pass-input').focus();
+    });
+    document.getElementById('admin-pass-input').addEventListener('keydown', e => {
+      if (e.key==='Enter') document.getElementById('btn-admin-login').click();
+    });
+    document.getElementById('btn-admin-login').addEventListener('click', () => {
+      const u = document.getElementById('admin-user-input').value.trim().toLowerCase();
+      const p = document.getElementById('admin-pass-input').value;
+      if (VALID_USERS[u] && VALID_USERS[u] === p) {
+        adminLogged = true;
+        document.getElementById('admin-login-section').style.display = 'none';
+        document.getElementById('admin-content').style.display       = 'block';
+        document.getElementById('admin-sub-text').textContent        = 'Bem-vinda! 🎀';
+        renderAdminContent();
+      } else {
+        document.getElementById('admin-login-error').style.display = 'block';
+      }
+    });
+
+    function renderAdminContent() {
+      const list = document.getElementById('admin-items-list');
+      if (!items.length) {
+        list.innerHTML = '<p style="color:var(--pink-muted);font-size:13px;margin-bottom:8px;">Nenhum item ainda.</p>';
+        return;
+      }
+      const allAdminCats = [...CATEGORIES, { id: '__gifted__', label: 'Já foi 😌', icon: '😌' }];
+      let html = '';
+      allAdminCats.forEach(cat => {
+        const catItems = cat.id === '__gifted__'
+          ? items.filter(it => !it.unlimited && !!it.takenBy)
+          : items.filter(it => (it.category||'basicos') === cat.id);
+        if (!catItems.length) return;
+        html += `<div class="admin-cat-group">
+          <div class="admin-cat-label">${cat.icon} ${cat.label}</div>
+          ${catItems.map(item => {
+            const info = item.unlimited
+              ? `✨ Sem limite — ${item.giftedCount||0} presenteado(s)`
+              : item.takenBy ? `Presenteado por: ${esc(item.takenBy)}` : 'Disponível';
+            const sub = (item.subtitle||'').length>40 ? item.subtitle.substring(0,40)+'…' : (item.subtitle||'');
+            return `<div class="admin-item-row">
+              <div class="admin-item-info">
+                <strong>${esc(item.title)}</strong>
+                <span>${esc(sub)}</span>
+                <span style="color:var(--pink-main);font-size:10px;">${info}</span>
+              </div>
+              <button class="btn-delete" data-id="${item.id}">Remover</button>
+            </div>`;
+          }).join('')}
+        </div>`;
+      });
+      list.innerHTML = html || '<p style="color:var(--pink-muted);font-size:13px;">Nenhum item.</p>';
+      list.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          if (!confirm('Remover este item da lista?')) return;
+          try { await deleteDoc(doc(db,'items',btn.dataset.id)); }
+          catch(err) { console.error(err); alert('Erro ao remover.'); }
+        });
+      });
+    }
+
+    // ── PHOTO PREVIEW ─────────────────────────────────────────
+    document.getElementById('new-photo').addEventListener('input', e => {
+      const url = e.target.value.trim();
+      const preview = document.getElementById('photo-url-preview');
+      if (url) { preview.src = url; preview.style.display = 'block'; preview.onerror = () => { preview.style.display = 'none'; }; }
+      else { preview.style.display = 'none'; }
+    });
+
+    // ── ADD ITEM ──────────────────────────────────────────────
+    document.getElementById('btn-add-item').addEventListener('click', async () => {
+      const title     = document.getElementById('new-title').value.trim();
+      const subtitle  = document.getElementById('new-subtitle').value.trim();
+      const link      = document.getElementById('new-link').value.trim();
+      const photoUrl  = document.getElementById('new-photo').value.trim();
+      const category  = document.getElementById('new-category').value;
+      const unlimited = document.getElementById('new-unlimited').checked;
+      if (!title) { document.getElementById('new-title').focus(); return; }
+
+      const btn = document.getElementById('btn-add-item');
+      btn.disabled = true; btn.textContent = 'Adicionando...';
+
+      try {
+        await addDoc(itemsCol, {
+          title, subtitle: subtitle||'', link: link||'', photoUrl: photoUrl||'',
+          category, unlimited, giftedCount: 0, takenBy: null,
+          order: Date.now(), adminSecret: ADMIN_SECRET,
+        });
+        ['new-title','new-subtitle','new-link','new-photo'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('new-unlimited').checked = false;
+        document.getElementById('photo-url-preview').style.display = 'none';
+      } catch(err) {
+        console.error(err);
+        alert('Erro ao adicionar. Verifique o console.');
+      }
+      btn.disabled = false; btn.textContent = '+ Adicionar item';
+    });
+  </script>
+</body>
+</html>
